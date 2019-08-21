@@ -5,6 +5,10 @@
 #pragma comment(lib, "dsound.lib")
 
 
+/**
+* @class	DirectSoundImpl
+* @brief	DirectSoundクラスの実装
+*/
 class DirectSoundImpl 
 {
 	friend CDirectSound;
@@ -16,13 +20,16 @@ private:
 	static	void	Finalize();
 	static	DirectSoundImpl	*GetInstance();
 
+	HRESULT InitDirectSound(HWND hWnd);
 	HRESULT	CreateDirectSound(HWND hWnd);
 	HRESULT	CreatePrimaryBuffer(IDirectSound8 *pDS8);
+
+	IDirectSound8		*GetDirectSound8();
+	IDirectSoundBuffer	*GetPrimaryBuffer();
 private:
 	static	DirectSoundImpl	*m_pInstance;
 	IDirectSound8			*m_pDS8;
-	IDirectSoundBuffer		*m_pDSBuffer;
-	IDirectSoundBuffer8		*m_pPrimary;
+	IDirectSoundBuffer		*m_pPrimary;
 };
 
 DirectSoundImpl	*DirectSoundImpl::m_pInstance = NULL;
@@ -33,7 +40,6 @@ DirectSoundImpl	*DirectSoundImpl::m_pInstance = NULL;
 DirectSoundImpl::DirectSoundImpl()
 {
 	m_pDS8 = NULL;
-	m_pDSBuffer = NULL;
 	m_pPrimary = NULL;
 }
 
@@ -43,9 +49,8 @@ DirectSoundImpl::DirectSoundImpl()
 */
 DirectSoundImpl::~DirectSoundImpl()
 {
-	SAFE_DELETE(m_pPrimary);
-	SAFE_DELETE(m_pDSBuffer);
-	SAFE_DELETE(m_pDS8);
+	SAFE_RELEASE(m_pPrimary);
+	SAFE_RELEASE(m_pDS8);
 }
 
 
@@ -82,6 +87,22 @@ DirectSoundImpl * DirectSoundImpl::GetInstance()
 	return m_pInstance;
 }
 
+
+
+/**
+* @brief	DirectSoundの初期化
+* @param	[in]	hWnd	WindowHandle
+*/
+HRESULT DirectSoundImpl::InitDirectSound(HWND hWnd)
+{
+	HRESULT hr = S_OK;
+
+	hr = DirectSoundImpl::CreateDirectSound(hWnd);
+
+	hr = DirectSoundImpl::CreatePrimaryBuffer(m_pDS8);
+
+	return hr;
+}
 
 /**
 * @brief	DirectSoundの生成
@@ -122,11 +143,84 @@ HRESULT DirectSoundImpl::CreatePrimaryBuffer(IDirectSound8 *pDS8)
 	dsdesc.dwFlags = DSBCAPS_PRIMARYBUFFER;
 	dsdesc.dwBufferBytes = 0;
 	dsdesc.lpwfxFormat = NULL;
-	hr = pDS8->CreateSoundBuffer(&dsdesc,)
+	hr = pDS8->CreateSoundBuffer(&dsdesc, &m_pPrimary, NULL);
+	if (FAILED(hr))
+		goto EXIT;
 
+	// プライマリバッファのステータスを決定
+	wfx.cbSize = sizeof(WAVEFORMATEX);
+	wfx.wFormatTag = WAVE_FORMAT_PCM;
+	wfx.nChannels = 2;
+	wfx.nSamplesPerSec = 44100;
+	wfx.wBitsPerSample = 16;
+	wfx.nBlockAlign = wfx.nChannels * wfx.wBitsPerSample / 8;
+	wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
+	hr = m_pPrimary->SetFormat(&wfx);
+	if (FAILED(hr))
+		goto EXIT;
 
-	return E_NOTIMPL;
+EXIT:
+	return hr;
 }
 
 
 
+/**
+* @brief	DirectSound8の取得
+*/
+IDirectSound8 * DirectSoundImpl::GetDirectSound8()
+{
+	return m_pDS8;
+}
+
+
+/**
+* @brief	プライマリーバッファの取得
+*/
+IDirectSoundBuffer * DirectSoundImpl::GetPrimaryBuffer()
+{
+	return m_pPrimary;
+}
+
+
+/**
+* @brief	初期化
+* @param	[in]	hWnd	WindowHandle
+*/
+void CDirectSound::Initialize(HWND hWnd)
+{
+	DirectSoundImpl *pObj = DirectSoundImpl::GetInstance();
+
+	pObj->InitDirectSound(hWnd);
+}
+
+
+/**
+* @brief	終了処理
+*/
+void CDirectSound::Finalize()
+{
+	DirectSoundImpl::Finalize();
+}
+
+
+/**
+* @brief	IDirectSound8の取得
+*/
+IDirectSound8 * CDirectSound::GetDirectSound8()
+{
+	DirectSoundImpl *pObj = DirectSoundImpl::GetInstance();
+
+	return pObj->GetDirectSound8();
+}
+
+
+/**
+* @brief	DirectSoundBufferの取得
+*/
+IDirectSoundBuffer * CDirectSound::GetPrimaryBuffer()
+{
+	DirectSoundImpl *pObj = DirectSoundImpl::GetInstance();
+
+	return pObj->GetPrimaryBuffer();
+}

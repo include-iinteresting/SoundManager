@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="ogglib">
-      <UniqueIdentifier>{1124f186-d296-4549-9994-18c9ee77898a}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -25,6 +22,24 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="DirectSound.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="OggSound.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="SDKwavefile.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="WaveSound.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="IStreamingSound.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="IOneshotSound.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -38,42 +53,23 @@
     <ClCompile Include="DirectSound.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="lib\libogg.dll">
-      <Filter>ogglib</Filter>
-    </None>
-    <None Include="lib\libogg.exp">
-      <Filter>ogglib</Filter>
-    </None>
-    <None Include="lib\libogg.iobj">
-      <Filter>ogglib</Filter>
-    </None>
-    <None Include="lib\libogg.ipdb">
-      <Filter>ogglib</Filter>
-    </None>
-    <None Include="lib\libogg.pdb">
-      <Filter>ogglib</Filter>
-    </None>
-    <None Include="lib\vorbisdec_static.exe">
-      <Filter>ogglib</Filter>
-    </None>
-    <None Include="lib\vorbisenc_static.exe">
-      <Filter>ogglib</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="lib\libogg.lib">
-      <Filter>ogglib</Filter>
-    </Library>
-    <Library Include="lib\libogg_static.lib">
-      <Filter>ogglib</Filter>
-    </Library>
-    <Library Include="lib\libvorbis_static.lib">
-      <Filter>ogglib</Filter>
-    </Library>
-    <Library Include="lib\libvorbisfile_static.lib">
-      <Filter>ogglib</Filter>
-    </Library>
+    <ClCompile Include="OggSound.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="SDKwavefile.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="WaveSound.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="IStreamingSound.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="IOneshotSound.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

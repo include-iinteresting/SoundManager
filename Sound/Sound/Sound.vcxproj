@@ -90,10 +90,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\include;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\Win32\Release;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\Win32\Debug;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\Win32\Release;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -104,10 +106,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\include;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\x64\Release;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\x64\Debug;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\x64\Release;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/NODEFAULTLIB:libcmt.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -120,12 +126,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\include;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\Win32\Release;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\Win32\Debug;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\Win32\Release;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -138,43 +146,43 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\include;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\x64\Release;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\x64\Debug;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\x64\Release;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/NODEFAULTLIB:libcmt.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="DirectSound.h" />
+    <ClInclude Include="IOneshotSound.h" />
+    <ClInclude Include="IStreamingSound.h" />
+    <ClInclude Include="OggSound.h" />
+    <ClInclude Include="SDKwavefile.h" />
+    <ClInclude Include="SoundManager.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="WaveSound.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DirectSound.cpp" />
+    <ClCompile Include="IOneshotSound.cpp" />
+    <ClCompile Include="IStreamingSound.cpp" />
+    <ClCompile Include="OggSound.cpp" />
+    <ClCompile Include="SDKwavefile.cpp" />
     <ClCompile Include="Sound.cpp" />
+    <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="lib\libogg.dll" />
-    <None Include="lib\libogg.exp" />
-    <None Include="lib\libogg.iobj" />
-    <None Include="lib\libogg.ipdb" />
-    <None Include="lib\libogg.pdb" />
-    <None Include="lib\vorbisdec_static.exe" />
-    <None Include="lib\vorbisenc_static.exe" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="lib\libogg.lib" />
-    <Library Include="lib\libogg_static.lib" />
-    <Library Include="lib\libvorbisfile_static.lib" />
-    <Library Include="lib\libvorbis_static.lib" />
+    <ClCompile Include="WaveSound.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
