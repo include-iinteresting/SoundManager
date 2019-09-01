@@ -45,6 +45,12 @@ void CWaveSound::Play(DWORD dwPriority, LONG lVol)
 {
 	if (m_pSecondary) {
 		m_pSecondary->SetVolume(lVol);
+		m_pSecondary->SetCurrentPosition(0);
+		void *AP1 = 0, *AP2 = 0;
+		DWORD AB1 = 0, AB2 = 0;
+		m_pSecondary->Lock(0, m_dwSize, &AP1, &AB1, &AP2, &AB2, 0);
+		AP1 = m_pBuffer;
+		m_pSecondary->Unlock(AP1, AB1, AP2, AB2);
 		m_pSecondary->Play(0, dwPriority, 0);
 	}
 }
@@ -57,24 +63,6 @@ void CWaveSound::Stop()
 {
 	if (m_pSecondary)
 		m_pSecondary->Stop();
-}
-
-
-/**
-* @brief	I—¹
-*/
-void CWaveSound::Done()
-{
-	if (m_pSecondary) 
-	{
-		m_pSecondary->Stop();
-		m_pSecondary->SetCurrentPosition(0);
-		void *AP1 = 0, *AP2 = 0;
-		DWORD AB1 = 0, AB2 = 0;
-		m_pSecondary->Lock(0, m_dwSize, &AP1, &AB1, &AP2, &AB2, 0);
-		AP1 = m_pBuffer;
-		m_pSecondary->Unlock(AP1, AB1, AP2, AB2);
-	}
 }
 
 
@@ -129,3 +117,4 @@ void CWaveSound::CreateSecondaryBuffer()
 	m_pDSB->QueryInterface(IID_IDirectSoundBuffer, (void**)&m_pSecondary);
 	m_dwSize = DSBufferDesc.dwSize;
 }
+

@@ -90,7 +90,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\include;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Ogg\oggvorbis\include;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Ogg\ogglib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -106,13 +106,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\include;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Ogg\oggvorbis\include;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Ogg\ogglib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\x64\Release;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\oggvorbis\x64\Debug;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\x64\Release;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Sound\Ogg\ogglib\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\hsatomura\Desktop\Git\Sound\Sound\Ogg\oggvorbis\x64\Debug;C:\Users\hsatomura\Desktop\Git\Sound\Sound\Ogg\ogglib\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/NODEFAULTLIB:libcmt.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -161,6 +161,7 @@
     <ClInclude Include="DirectSound.h" />
     <ClInclude Include="IOneshotSound.h" />
     <ClInclude Include="IStreamingSound.h" />
+    <ClInclude Include="Mp3Sound.h" />
     <ClInclude Include="OggSound.h" />
     <ClInclude Include="SDKwavefile.h" />
     <ClInclude Include="SoundManager.h" />
@@ -172,6 +173,7 @@
     <ClCompile Include="DirectSound.cpp" />
     <ClCompile Include="IOneshotSound.cpp" />
     <ClCompile Include="IStreamingSound.cpp" />
+    <ClCompile Include="Mp3Sound.cpp" />
     <ClCompile Include="OggSound.cpp" />
     <ClCompile Include="SDKwavefile.cpp" />
     <ClCompile Include="Sound.cpp" />

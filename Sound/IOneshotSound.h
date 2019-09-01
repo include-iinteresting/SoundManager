@@ -13,6 +13,5 @@ public:
 	virtual ~IOneshotSound() = 0;
 	virtual	void	Play(DWORD dwPriority, LONG lVolume) = 0;
 	virtual	void	Stop() = 0;
-	virtual	void	Done() = 0;
 };
 
