@@ -2,6 +2,8 @@
 #include "SoundManager.h"
 #include "DirectSound.h"
 #include "OggSound.h"
+#include "Mp3Sound.h"
+#include "WaveSound.h"
 #include <list>
 #include <process.h>
 
@@ -58,29 +60,38 @@ private:
 	static	void	Initialize();
 	static	void	Finalize();
 	static	SoundManagerImpl	*GetInstance();
+	
+	//	OneshotSound
+	void	LoadOneshotSound(const char* pFilename);
+	void	UnloadOneshotSound(unsigned int numSound);
+	void	OneshotPlay(unsigned int numSound, DWORD dwPriority, LONG lVolume);
+	void	OneshotStop(unsigned int numSound);
 
+
+	//	StreamSound
 	void	LoadStreamingSound(const char* pFilename, bool bLoopFlag);
 	void	UnloadStreamingSound(unsigned int numSound);
-	void	Play(unsigned int numSound, DWORD dwPriority, DWORD dwFlag);
-	void	Stop(unsigned int numSound);
-	void	Done(unsigned int numSound);
-	
+	void	StreamPlay(unsigned int numSound, DWORD dwPriority, DWORD dwFlag);
+	void	StreamStop(unsigned int numSound);
+	void	StreamDone(unsigned int numSound);
 	void	Command();
-	void	PlayCommand(unsigned int numSound, DWORD dwPriority, DWORD dwFlag);
-	void	StopCommand(unsigned int numSound);
-	void	DoneCommand(unsigned int numSound);
+	void	StreamPlayCommand(unsigned int numSound, DWORD dwPriority, DWORD dwFlag);
+	void	StreamStopCommand(unsigned int numSound);
+	void	StreamDoneCommand(unsigned int numSound);
 
+	//	StreamThread
 	void	Lock();
 	void	Unlock();
-
 	static	void	ThreadProcLauncher(void* arg);
 	void			ThreadProc();
 	
+	//	RingBuffer
 	void			EnQueue(unsigned int numSound, SoundCommand Command, DWORD dwPriority, DWORD dwFlag);
 	void			DeQueue(unsigned int *pNumSound, SoundCommand *pCommand, DWORD *pPriority, DWORD *pFlag);
 private:
 	static	SoundManagerImpl	*m_pInstance;
-	std::list<IStreamingSound*>	m_pSounds;
+	std::list<IStreamingSound*>	m_pStreamSounds;
+	std::list<IOneshotSound*>	m_pOneshotSounds;
 
 	CRITICAL_SECTION	m_CriticalSection;
 
@@ -109,6 +120,8 @@ SoundManagerImpl::SoundManagerImpl()
 	ThreadFlags.m_bStopCommand = false;
 	ThreadFlags.m_bThreadDone = false;
 
+	m_pOneshotSounds.clear();
+
 	_beginthread(ThreadProcLauncher, 0, this);
 }
 
@@ -118,6 +131,11 @@ SoundManagerImpl::SoundManagerImpl()
 */
 SoundManagerImpl::~SoundManagerImpl()
 {
+	for (std::list<IOneshotSound*>::iterator it = m_pOneshotSounds.begin(); it != m_pOneshotSounds.end();) {
+		SAFE_DELETE(*it);
+		it = m_pOneshotSounds.erase(it);
+	}
+
 	while (!ThreadFlags.m_bThreadDone) {
 		if (!ThreadFlags.m_bStopCommand) {
 			Lock();
@@ -163,15 +181,117 @@ SoundManagerImpl * SoundManagerImpl::GetInstance()
 
 
 /**
+* @brief	ワンショット再生する音声ファイルを読み込む
+* @param	[in]	pFilename	ファイル名
+*/
+void SoundManagerImpl::LoadOneshotSound(const char * pFilename)
+{
+	m_pOneshotSounds.push_back(new CWaveSound(pFilename));
+}
+
+
+/**
+* @brief	ワンショット再生する音声ファイルの読み込みを破棄する
+* @param	[in]	numSound	サウンドオブジェクトの番号
+*/
+void SoundManagerImpl::UnloadOneshotSound(unsigned int numSound)
+{
+	if (numSound < m_pOneshotSounds.size()) {
+		std::list<IOneshotSound*>::iterator it = m_pOneshotSounds.begin();
+		for (unsigned int i = 0; i < numSound; ++i) {
+			it++;
+		}
+		SAFE_DELETE(*it);
+		it = m_pOneshotSounds.erase(it);
+	}
+}
+
+
+/**
+* @brief	ワンショットサウンドの再生
+* @param	[in]	numSound	サウンドオブジェクトの番号
+* @param	[in]	dwPriority	サウンドの優先度
+* @param	[in]	lVolume		サウンドの音量（-10000～0）
+*/
+void SoundManagerImpl::OneshotPlay(unsigned int numSound, DWORD dwPriority, LONG lVolume)
+{
+	if (numSound < m_pOneshotSounds.size()) {
+		std::list<IOneshotSound*>::iterator it = m_pOneshotSounds.begin();
+		for (unsigned int i = 0; i < numSound; ++i) {
+			it++;
+		}
+		(*it)->Play(dwPriority, lVolume);
+	}
+}
+
+
+/**
+* @brief	ワンショットサウンドの停止
+* @param	[in]	numSound	サウンドオブジェクトの番号
+*/
+void SoundManagerImpl::OneshotStop(unsigned int numSound)
+{
+	if (numSound < m_pOneshotSounds.size()) {
+		std::list<IOneshotSound*>::iterator it = m_pOneshotSounds.begin();
+		for (unsigned int i = 0; i < numSound; ++i) {
+			it++;
+		}
+		(*it)->Stop();
+	}
+}
+
+//!	対応拡張子の数
+#define numExtension 2
+//!	対応拡張子
+static const char* extension[numExtension] =
+{
+	"ogg",
+	"mp3"
+};
+
+/**
 * @brief	ストリーミング再生する音声ファイルを読み込む
 * @param	[in]	pFilename	ファイル名
 * @param	[in]	bLoopFlag	ループフラグ
 */
 void SoundManagerImpl::LoadStreamingSound(const char * pFilename, bool bLoopFlag)
 {
-	Lock();
-	m_pSounds.push_back(new COggSound(pFilename, bLoopFlag));
-	Unlock();
+	//!<	拡張子の取得
+	char tmp[3];
+	int len = strlen(pFilename);
+	for (int i = 0; i < 3; ++i)
+	{
+		tmp[i] = pFilename[len - (3 - i)];
+	}
+
+	//!<	拡張子に応じた番号の取得
+	int iExtensionNumber = -1;
+	for (int i = 0; i < numExtension; ++i)
+	{
+		if (strstr(tmp, extension[i]) != NULL)
+		{
+			iExtensionNumber = i;
+			break;
+		}
+	}
+	//!<	拡張子に応じたオブジェクトの生成
+	switch (iExtensionNumber)
+	{
+	case 0:
+		Lock();
+		m_pStreamSounds.push_back(new COggSound(pFilename, bLoopFlag));
+		Unlock();
+		break;
+	case 1:
+		Lock();
+		m_pStreamSounds.push_back(new CMp3Sound(pFilename, bLoopFlag));
+		Unlock();
+		break;
+	default:
+		break;
+	}
+	
+	
 }
 
 
@@ -183,13 +303,13 @@ void SoundManagerImpl::LoadStreamingSound(const char * pFilename, bool bLoopFlag
 void SoundManagerImpl::UnloadStreamingSound(unsigned int numSound)
 {
 	Lock();
-	std::list<IStreamingSound*>::iterator it = m_pSounds.begin();
+	std::list<IStreamingSound*>::iterator it = m_pStreamSounds.begin();
 	for (unsigned int i = 0; i < numSound; ++i) {
 		++it;
 	}
 	(*it)->Stop();
 	SAFE_DELETE(*it);
-	it = m_pSounds.erase(it);
+	it = m_pStreamSounds.erase(it);
 	Unlock();
 }
 
@@ -200,10 +320,10 @@ void SoundManagerImpl::UnloadStreamingSound(unsigned int numSound)
 * @param	[in]	dwPriority	優先度
 * @param	[in]	dwFlag		再生フラグ
 */
-void SoundManagerImpl::Play(unsigned int numSound, DWORD dwPriority, DWORD dwFlag)
+void SoundManagerImpl::StreamPlay(unsigned int numSound, DWORD dwPriority, DWORD dwFlag)
 {
 	Lock();
-	std::list<IStreamingSound*>::iterator it = m_pSounds.begin();
+	std::list<IStreamingSound*>::iterator it = m_pStreamSounds.begin();
 	for (unsigned int i = 0; i < numSound; ++i) {
 		++it;
 	}
@@ -216,10 +336,10 @@ void SoundManagerImpl::Play(unsigned int numSound, DWORD dwPriority, DWORD dwFla
 * @brief	停止
 * @param	[in]	numSound	サウンドオブジェクトの番号
 */
-void SoundManagerImpl::Stop(unsigned int numSound)
+void SoundManagerImpl::StreamStop(unsigned int numSound)
 {
 	Lock();
-	std::list<IStreamingSound*>::iterator it = m_pSounds.begin();
+	std::list<IStreamingSound*>::iterator it = m_pStreamSounds.begin();
 	for (unsigned int i = 0; i < numSound; ++i) {
 		++it;
 	}
@@ -232,10 +352,10 @@ void SoundManagerImpl::Stop(unsigned int numSound)
 * @brief	終了
 * @param	[in]	numSound	サウンドオブジェクトの番号
 */
-void SoundManagerImpl::Done(unsigned int numSound)
+void SoundManagerImpl::StreamDone(unsigned int numSound)
 {
 	Lock();
-	std::list<IStreamingSound*>::iterator it = m_pSounds.begin();
+	std::list<IStreamingSound*>::iterator it = m_pStreamSounds.begin();
 	for (unsigned int i = 0; i < numSound; ++i) {
 		++it;
 	}
@@ -259,13 +379,13 @@ void SoundManagerImpl::Command()
 	//	命令に応じた処理
 	switch (command) {
 	case SOUND_PLAY:
-		this->Play(numSound, dwPriority, dwFlag);
+		this->StreamPlay(numSound, dwPriority, dwFlag);
 		break;
 	case SOUND_STOP:
-		this->Stop(numSound);
+		this->StreamStop(numSound);
 		break;
 	case SOUND_DONE:
-		this->Done(numSound);
+		this->StreamDone(numSound);
 		break;
 	default:
 		break;
@@ -279,7 +399,7 @@ void SoundManagerImpl::Command()
 * @param	[in]	dwPriority	優先度
 * @param	[in]	dwFlag		再生フラグ
 */
-void SoundManagerImpl::PlayCommand(unsigned int numSound, DWORD dwPriority, DWORD dwFlag)
+void SoundManagerImpl::StreamPlayCommand(unsigned int numSound, DWORD dwPriority, DWORD dwFlag)
 {
 	EnQueue(numSound, SOUND_PLAY, dwPriority, dwFlag);
 }
@@ -289,7 +409,7 @@ void SoundManagerImpl::PlayCommand(unsigned int numSound, DWORD dwPriority, DWOR
 * @brief	停止命令
 * @param	[in]	numSound	サウンドオブジェクトの番号
 */
-void SoundManagerImpl::StopCommand(unsigned int numSound)
+void SoundManagerImpl::StreamStopCommand(unsigned int numSound)
 {
 	EnQueue(numSound, SOUND_STOP, 0, 0);
 }
@@ -299,7 +419,7 @@ void SoundManagerImpl::StopCommand(unsigned int numSound)
 * @brief	終了命令
 * @param	[in]	numSound	サウンドオブジェクトの番号
 */
-void SoundManagerImpl::DoneCommand(unsigned int numSound)
+void SoundManagerImpl::StreamDoneCommand(unsigned int numSound)
 {
 	EnQueue(numSound, SOUND_DONE, 0, 0);
 }
@@ -344,15 +464,15 @@ void SoundManagerImpl::ThreadProc()
 		switch (m_ePhase)
 		{
 		case THREAD_INIT:	//	初期化
-			m_pSounds.clear();
+			m_pStreamSounds.clear();
 			m_ePhase = THREAD_RUN;
 		case THREAD_RUN:	//	更新
 
-			for (std::list<IStreamingSound*>::iterator it = m_pSounds.begin(); it != m_pSounds.end(); ++it) {
+			for (std::list<IStreamingSound*>::iterator it = m_pStreamSounds.begin(); it != m_pStreamSounds.end(); ++it) {
 				(*it)->Update();
 			}
 
-			if (m_pSounds.size() > 0)
+			if (m_pStreamSounds.size() > 0)
 				Command();
 
 			if (ThreadFlags.m_bStopCommand) {
@@ -362,12 +482,12 @@ void SoundManagerImpl::ThreadProc()
 			break;
 		case THREAD_WAIT:	//	終了待ち
 			Lock();
-			for (std::list<IStreamingSound*>::iterator it = m_pSounds.begin(); it != m_pSounds.end();) {
+			for (std::list<IStreamingSound*>::iterator it = m_pStreamSounds.begin(); it != m_pStreamSounds.end();) {
 				SAFE_DELETE(*it);
-				it = m_pSounds.erase(it);
+				it = m_pStreamSounds.erase(it);
 			}
 			Unlock();
-			
+			m_ePhase = THREAD_DONE;
 
 			break;
 		case THREAD_DONE:	//	終了処理
@@ -430,9 +550,9 @@ void SoundManagerImpl::DeQueue(unsigned int * pNumSound, SoundCommand * pCommand
 
 
 
-/**
+/*****************************
 * @class	CSoundManager
-*/
+*****************************/
 
 /**
 * @brief	初期化
@@ -487,11 +607,11 @@ void CSoundManager::UnloadStreamingSound(unsigned int numSound)
 * @param	[in]	dwPriority	優先度
 * @param	[in]	dwFlag		再生フラグ
 */
-void CSoundManager::Play(unsigned int numSound, DWORD dwPriority, DWORD dwFlag)
+void CSoundManager::StreamPlay(unsigned int numSound, DWORD dwPriority, DWORD dwFlag)
 {
 	SoundManagerImpl *pObj = SoundManagerImpl::GetInstance();
 
-	pObj->PlayCommand(numSound, dwPriority, dwFlag);
+	pObj->StreamPlayCommand(numSound, dwPriority, dwFlag);
 }
 
 
@@ -499,11 +619,11 @@ void CSoundManager::Play(unsigned int numSound, DWORD dwPriority, DWORD dwFlag)
 * @brief	停止
 * @param	[in]	numSound	サウンドオブジェクトの番号
 */
-void CSoundManager::Stop(unsigned int numSound)
+void CSoundManager::StreamStop(unsigned int numSound)
 {
 	SoundManagerImpl *pObj = SoundManagerImpl::GetInstance();
 
-	pObj->StopCommand(numSound);
+	pObj->StreamStopCommand(numSound);
 }
 
 
@@ -511,9 +631,59 @@ void CSoundManager::Stop(unsigned int numSound)
 * @brief	終了
 * @param	[in]	numSound	サウンドオブジェクトの番号
 */
-void CSoundManager::Done(unsigned int numSound)
+void CSoundManager::StreamDone(unsigned int numSound)
 {
 	SoundManagerImpl *pObj = SoundManagerImpl::GetInstance();
 
-	pObj->DoneCommand(numSound);
+	pObj->StreamDoneCommand(numSound);
+}
+
+
+/**
+* @brief	ワンショットサウンドの読み込み
+* @param	[in]	pFilename	ファイル名
+*/
+void CSoundManager::LoadOneshotSound(const char * pFilename)
+{
+	SoundManagerImpl *pObj = SoundManagerImpl::GetInstance();
+
+	pObj->LoadOneshotSound(pFilename);
+}
+
+
+/**
+* @brief	ワンショットサウンドの読み込み破棄
+* @param	[in]	numSound	サウンドオブジェクトの番号
+*/
+void CSoundManager::UnloadOneshotSound(unsigned int numSound)
+{
+	SoundManagerImpl *pObj = SoundManagerImpl::GetInstance();
+
+	pObj->UnloadOneshotSound(numSound);
+}
+
+
+/**
+* @brief	ワンショットサウンドの再生
+* @param	[in]	numSound	サウンドオブジェクトの番号
+* @param	[in]	dwPriority	サウンドの優先度
+* @param	[in]	lVolume		サウンドの音量（-10000～0）
+*/
+void CSoundManager::OneshotPlay(unsigned int numSound, DWORD dwPriority, LONG lVolume)
+{
+	SoundManagerImpl *pObj = SoundManagerImpl::GetInstance();
+
+	pObj->OneshotPlay(numSound, dwPriority, lVolume);
+}
+
+
+/**
+* @brief	ワンショッサウンドの停止
+* @param	[in]	numSound	サウンドオブジェクトの番号
+*/
+void CSoundManager::OneshotStop(unsigned int numSound)
+{
+	SoundManagerImpl *pObj = SoundManagerImpl::GetInstance();
+
+	pObj->OneshotStop(numSound);
 }

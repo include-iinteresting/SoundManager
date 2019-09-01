@@ -3,7 +3,6 @@
 
 
 
-
 class CWaveSound : public IOneshotSound
 {
 public:
@@ -12,7 +11,6 @@ public:
 
 	virtual	void	Play(DWORD dwPriority, LONG lVol)	override;
 	virtual	void	Stop()	override;
-	virtual	void	Done()	override;
 private:
 	void			LoadPcmData(const char* pFilename);
 	void			CreateSecondaryBuffer();
